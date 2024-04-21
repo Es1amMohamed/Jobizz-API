@@ -1,5 +1,6 @@
 # Jobizz-API
 A job board app helps people find and post job opportunities
+
   Homepage:
     Lists the latest job openings.
     Lets users filter jobs by location, industry, company, experience, etc.
