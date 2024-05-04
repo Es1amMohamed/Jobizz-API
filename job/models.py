@@ -2,17 +2,17 @@ from django.db import models
 
 # Create your models here.
 Job_type = (
-    ('Full Time', 'Full Time'),
-    ('Part Time', 'Part Time'),
-    ('Internship', 'Internship'),
-    ('Contract', 'Contract'),
-    ('Freelance', 'Freelance'),
+    ("Full Time", "Full Time"),
+    ("Part Time", "Part Time"),
+    ("Internship", "Internship"),
+    ("Contract", "Contract"),
+    ("Freelance", "Freelance"),
 )
 
 Job_level = (
-    ('Junior', 'Junior'),
-    ('Mid Level', 'Mid Level'),
-    ('Senior Level', 'Senior Level'),
+    ("Junior", "Junior"),
+    ("Mid Level", "Mid Level"),
+    ("Senior Level", "Senior Level"),
 )
 # class Job(models.Model):
 #     company_name = ''

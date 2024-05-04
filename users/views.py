@@ -6,6 +6,8 @@ from django.contrib.auth.hashers import make_password
 from rest_framework import status
 from .serializers import SignUpSerializer, UserSerializer
 from rest_framework.permissions import IsAuthenticated
+from .models import *
+from .serializers import *
 
 # Create your views here.
 
@@ -14,30 +16,61 @@ from rest_framework.permissions import IsAuthenticated
 def signup(request):
     """
     this function is used to create a new user
-
     """
     data = request.data
-    user = SignUpSerializer(data=data)
+    user_serializer = SignUpSerializer(data=data)
 
-    if user.is_valid():
-        if not User.objects.filter(email=data["email"]).exists():
+    if user_serializer.is_valid():
+        email = data.get("email")
+        if not User.objects.filter(email=email).exists():
             user = User.objects.create(
                 username=data["username"],
                 first_name=data["first_name"],
                 last_name=data["last_name"],
-                email=data["email"],
+                email=email,
                 password=make_password(data["password"]),
             )
             user.save()
-            return Response(
-                {"message": "User created successfully"}, status=status.HTTP_201_CREATED
-            )
+            user_type = data.get("user_type")
+            if user_type == "Company":
+                company_profile_serializer = CompanyProfileSerializer(data=data)
+                if company_profile_serializer.is_valid():
+                    company_profile_serializer.save(user=user)
+                    return Response(
+                        {"message": "User and company profile created successfully"},
+                        status=status.HTTP_201_CREATED,
+                    )
+                else:
+                    user.delete()
+                    return Response(
+                        company_profile_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            elif user_type == "Employee":
+                profile_serializer = ProfileSerializer(data=data)
+                if profile_serializer.is_valid():
+                    profile_serializer.save(user=user)
+                    return Response(
+                        {"message": "User and profile created successfully"},
+                        status=status.HTTP_201_CREATED,
+                    )
+                else:
+                    user.delete()
+                    return Response(
+                        profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
+            else:
+                user.delete()
+                return Response(
+                    {"error": "Invalid user type"}, status=status.HTTP_400_BAD_REQUEST
+                )
+
         else:
             return Response(
                 {"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST
             )
     else:
-        return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET"])
