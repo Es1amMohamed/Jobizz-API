@@ -46,11 +46,18 @@ USER_TYPE = [
     ("Company", "Company"),
 ]
 
+SENIORITY_LEVEL = (
+    ("Junior", "Junior"),
+    ("Mid Level", "Mid Level"),
+    ("Senior Level", "Senior Level"),
+)
+
 
 class EmployeeProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     image = models.ImageField(default="default.jpg", upload_to="profile_pics")
     Job_title = models.CharField(max_length=200)
+    experience_level = models.CharField(max_length=200, choices=SENIORITY_LEVEL)
     gender = models.CharField(max_length=200, choices=GENDER)
     user_type = models.CharField(max_length=200, choices=USER_TYPE)
     slug = models.SlugField(max_length=200, blank=True)
