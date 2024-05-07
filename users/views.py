@@ -37,7 +37,7 @@ def signup(request):
                 if company_profile_serializer.is_valid():
                     company_profile_serializer.save(user=user)
                     return Response(
-                        {"message": "User and company profile created successfully"},
+                        {"message": "User and company profile created successfully, we will provide you an email shortly"},
                         status=status.HTTP_201_CREATED,
                     )
                 else:

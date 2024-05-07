@@ -4,6 +4,11 @@ from .models import *
 
 
 class SignUpSerializer(serializers.ModelSerializer):
+    
+    """ 
+    this class is used to create a new user when signing up
+    
+    """
     class Meta:
         model = User
         fields = ("username", "first_name", "last_name", "email", "password")
@@ -17,18 +22,33 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    
+    """
+    this class is used to serialize and deserialize the user model 
+    
+    """
     class Meta:
         model = User
         fields = ["username", "first_name", "last_name", "email"]
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    
+    """ 
+    this class is used to serialize and deserialize the profile model 
+    
+    """
     class Meta:
         model = EmployeeProfile
         exclude = ["slug"]
 
 
 class CompanyProfileSerializer(serializers.ModelSerializer):
+    
+    """ 
+    this class is used to serialize and deserialize the company profile model
+     
+    """
     class Meta:
         model = CompanyProfile
         exclude = ["is_active", "slug"]
