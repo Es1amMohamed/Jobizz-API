@@ -1,8 +1,11 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.dispatch import receiver
 from django.utils.text import slugify
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
+from django.core.validators import MinLengthValidator
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Create your models here.
 
@@ -60,13 +63,11 @@ SENIORITY_LEVEL = [
     ("Junior", "Junior"),
     ("Mid Level", "Mid Level"),
     ("Senior Level", "Senior Level"),
-    ]
-
+]
 
 
 class EmployeeProfile(models.Model):
-    
-    """ 
+    """
     this model is used to create a profile for an employee, it is connected:
     - to the user model.
     - to the employee profile model.
@@ -74,12 +75,19 @@ class EmployeeProfile(models.Model):
     - some information about the employee
     - function to get the username of the user
     - class Meta to set the verbose name and plural names
-    
+
     """
-    
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="employee_profile")
+
+    username = models.TextField(max_length=50, unique=True)
+    first_name = models.TextField(max_length=50)
+    last_name = models.TextField(max_length=50)
+    email = models.EmailField(max_length=255, unique=True)
+    password = models.CharField(validators=[MinLengthValidator(8)], max_length=100)
+    password_confirmation = models.CharField(
+        validators=[MinLengthValidator(8)], max_length=100
+    )
     image = models.ImageField(default="default.jpg", upload_to="profile_pics")
-    Job_title = models.CharField(max_length=200)
+    job_title = models.CharField(max_length=200)
     experience_level = models.CharField(max_length=200, choices=SENIORITY_LEVEL)
     gender = models.CharField(max_length=200, choices=GENDER)
     user_type = models.CharField(max_length=200, choices=USER_TYPE)
@@ -91,20 +99,26 @@ class EmployeeProfile(models.Model):
         verbose_name_plural = "Profiles"
 
     def __str__(self):
-        return f"{self.user.username} Profile"
-    
-    def get_username(self):
-        return self.user.username
+        return f"{self.username} Profile"
+
+    def clean(self):
+        """
+        this function will check if the password and password_confirmation are the same
+        and if the age is not empty
+
+        """
+
+        if self.password != self.password_confirmation:
+            raise ValidationError("passwords do not match")
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.user.username)
+            self.slug = slugify(self.username)
         super().save(*args, **kwargs)
 
 
 class CompanyProfile(models.Model):
-    
-    """ 
+    """
     this model is used to create a profile for an company, it is connected:
     - to the user model.
     - to the company profile model.
@@ -112,14 +126,21 @@ class CompanyProfile(models.Model):
     - some information about the company
     - function to get the username of the user
     - class Meta to set the verbose name and plural names
-    
+
     """
-    
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="company_profile")
+
+    username = models.TextField(max_length=50, unique=True)
+    email = models.EmailField(max_length=255, unique=True)
+    company_name = models.TextField(max_length=150, default="Company")
+    password = models.CharField(validators=[MinLengthValidator(8)], max_length=100)
+    password_confirmation = models.CharField(
+        validators=[MinLengthValidator(8)], max_length=100
+    )
     logo = models.ImageField(default="default2.jpg", upload_to="company_pics")
     industry = models.CharField(max_length=200, choices=INDUSTRY)
     location = models.CharField(max_length=200)
     number_of_employees = models.CharField(max_length=200, choices=NUMBER_OF_EMPLOYEES)
+    website = models.URLField(max_length=255, blank=True)
     user_type = models.CharField(max_length=200, choices=USER_TYPE)
     is_active = models.BooleanField(default=False)
     crated_at = models.DateTimeField(auto_now_add=True)
@@ -130,35 +151,85 @@ class CompanyProfile(models.Model):
         verbose_name_plural = "Companies Profile"
 
     def __str__(self):
-        return f"{self.user.username} Profile"
-    
-    def get_username(self):
-        return self.user.username
+        return f"{self.username} Profile"
+
+    def clean(self):
+        """
+        this function will check if the password and password_confirmation are the same
+        and if the age is not empty
+
+        """
+
+        if self.password != self.password_confirmation:
+            raise ValidationError("passwords do not match")
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.user.username)
+            self.slug = slugify(self.username)
         super().save(*args, **kwargs)
 
 
-@receiver(post_save, sender=User)
+@receiver(post_save, sender=EmployeeProfile)
 def create_user_profile(sender, instance, created, **kwargs):
-    
-    """ 
-    this function is a signal to create a profile for a new user as a employee.
-    
     """
-    
+    this function is a signal to create a profile for a new user as a employee.
+
+    """
+
     if created:
-        EmployeeProfile.objects.create(user=instance)
+        user = User.objects.create_user(
+            username=instance.username,
+            email=instance.email,
+            password=instance.password,
+        )
+
+    group_name = "Employees Group"
+
+    try:
+        group = Group.objects.get(name=group_name)
+        group.permissions.clear()
+    except Group.DoesNotExist:
+        group = Group(name=group_name)
+        group.save()
+
+    user.groups.add(group)
 
 
-@receiver(post_save, sender=User)
+@receiver(post_save, sender=CompanyProfile)
 def company_user_profile(sender, instance, **kwargs):
-    
-    """ 
+    """
     this function is a signal to create a profile for a new user as a company.
-    
+
     """
     if instance.is_active:
-        CompanyProfile.objects.create(user=instance)
+        user = User.objects.create_user(
+            username=instance.username,
+            email=instance.email,
+            password=instance.password,
+        )
+
+        group_name = "Companies Group"
+
+        try:
+            group = Group.objects.get(name=group_name)
+            group.permissions.clear()
+        except Group.DoesNotExist:
+            group = Group(name=group_name)
+            group.save()
+
+        user.groups.add(group)
+
+
+@receiver(post_delete, sender=User)
+def delete_user_with_profile(sender, instance, **kwargs):
+    if instance.email:
+        try:
+            profile = EmployeeProfile.objects.get(email=instance.email)
+            profile.delete()
+        except EmployeeProfile.DoesNotExist:
+            pass
+        try:
+            profile = CompanyProfile.objects.get(email=instance.email)
+            profile.delete()
+        except CompanyProfile.DoesNotExist:
+            pass

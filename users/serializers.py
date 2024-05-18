@@ -3,52 +3,78 @@ from rest_framework import serializers
 from .models import *
 
 
-class SignUpSerializer(serializers.ModelSerializer):
-    
-    """ 
-    this class is used to create a new user when signing up
-    
+class EmployeeSignUpSerializer(serializers.ModelSerializer):
     """
+    this class is used to create a new user when signing up
+
+    """
+
     class Meta:
-        model = User
-        fields = ("username", "first_name", "last_name", "email", "password")
-        extra_kwargs = {
-            "username": {"required": True, "allow_blank": False},
-            "first_name": {"required": True, "allow_blank": False},
-            "last_name": {"required": True, "allow_blank": False},
-            "email": {"required": True, "allow_blank": False},
-            "password": {"required": True, "allow_blank": False, "min_length": 8},
-        }
+        model = EmployeeProfile
+        fields = (
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "password",
+            "password_confirmation",
+            "job_title",
+            "experience_level",
+            "gender",
+            "user_type",
+        )
+
+
+class CompanySignUpSerializer(serializers.ModelSerializer):
+    """
+    this class is used to create a new user when signing up
+
+    """
+
+    class Meta:
+        model = CompanyProfile
+        fields = (
+            "username",
+            "company_name",
+            "email",
+            "password",
+            "password_confirmation",
+            "industry",
+            "location",
+            "number_of_employees",
+            "website",
+            "user_type",
+        )
 
 
 class UserSerializer(serializers.ModelSerializer):
-    
     """
-    this class is used to serialize and deserialize the user model 
-    
+    this class is used to serialize and deserialize the user model
+
     """
+
     class Meta:
         model = User
         fields = ["username", "first_name", "last_name", "email"]
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    
-    """ 
-    this class is used to serialize and deserialize the profile model 
-    
     """
+    this class is used to serialize and deserialize the profile model
+
+    """
+
     class Meta:
         model = EmployeeProfile
         exclude = ["slug"]
 
 
 class CompanyProfileSerializer(serializers.ModelSerializer):
-    
-    """ 
-    this class is used to serialize and deserialize the company profile model
-     
     """
+    this class is used to serialize and deserialize the company profile model
+
+    """
+
     class Meta:
         model = CompanyProfile
         exclude = ["is_active", "slug"]
