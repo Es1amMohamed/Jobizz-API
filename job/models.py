@@ -19,6 +19,16 @@ SENIORITY_LEVEL = (
 
 
 class Job(models.Model):
+    """
+    Job Model to represent a job listing.
+    
+        This model represents a job listing with various details such as title, type,
+        level, salary, location, description, requirements, and timestamps for creation
+        and updates.
+        
+    """
+        
+    
     company_name = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     job_type = models.CharField(max_length=100, choices=Job_type)
@@ -40,6 +50,35 @@ class Job(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
+        
+        """
+        Save method override.
+
+        This method overrides the save method to generate a slug for the job title
+        if it doesn't already exist.
+
+        Returns:
+        --------
+        None
+        """
+        
         if not self.slug:
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
+
+
+class JobApplication(models.Model):
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    employee = models.ForeignKey(User, on_delete=models.CASCADE)
+    ##cv = models.FileField(upload_to="cv") ' i comment this field because i don't want to upload cv. ' 
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Apply For Job"
+        verbose_name_plural = "Apply For Jobs"
+
+    def __str__(self):
+        return f"{self.job.title} - {self.employee.username}"
+    
+    
