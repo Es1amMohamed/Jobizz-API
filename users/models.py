@@ -5,6 +5,7 @@ from django.utils.text import slugify
 from django.db.models.signals import post_save, post_delete
 from django.core.validators import MinLengthValidator
 from django.core.exceptions import ValidationError
+from job.models import *
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Create your models here.
@@ -115,6 +116,21 @@ class EmployeeProfile(models.Model):
         if not self.slug:
             self.slug = slugify(self.username)
         super().save(*args, **kwargs)
+        
+        
+    def get_application_count(self):
+        
+        """
+        This method returns the total number of job applications made by this employee.
+
+        It uses the related name 'employee_applications' defined in the Application model's ForeignKey relationship
+        to count how many Application instances are linked to this particular Employee instance.
+
+        Returns:
+            int: The count of job applications made by the employee.
+        """
+        
+        return self.employee_applications.count()
 
 
 class CompanyProfile(models.Model):
@@ -167,6 +183,20 @@ class CompanyProfile(models.Model):
         if not self.slug:
             self.slug = slugify(self.username)
         super().save(*args, **kwargs)
+        
+    def get_job_count(self):
+        
+        """
+        This method returns the total number of jobs associated with the company.
+
+        It uses the related name 'jobs' defined in the Job model's ForeignKey relationship
+        to count how many Job instances are linked to this particular Company instance.
+
+        Returns:
+            int: The count of jobs associated with the company.
+        """
+        
+        return self.jobs.count()
 
 
 @receiver(post_save, sender=EmployeeProfile)

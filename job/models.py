@@ -29,7 +29,7 @@ class Job(models.Model):
     """
         
     
-    company_name = models.ForeignKey(User, on_delete=models.CASCADE)
+    company_name = models.ForeignKey(User, related_name = 'jobs' ,on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     job_type = models.CharField(max_length=100, choices=Job_type)
     job_level = models.CharField(max_length=100, choices=SENIORITY_LEVEL)
@@ -65,11 +65,24 @@ class Job(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
+        
+    def get_application_count(self):
+        
+        """
+        This method returns the total number of applicants for this job.
 
+        It uses the related name 'applicants' defined in the Applicant model's ForeignKey relationship
+        to count how many Applicant instances are linked to this particular Job instance.
+
+        Returns:
+            int: The count of applicants for the job.
+        """
+        
+        return self.applications.count()
 
 class JobApplication(models.Model):
-    job = models.ForeignKey(Job, on_delete=models.CASCADE)
-    employee = models.ForeignKey(User, on_delete=models.CASCADE)
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="applications")
+    employee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='employee_applications')
     ##cv = models.FileField(upload_to="cv") ' i comment this field because i don't want to upload cv. ' 
     created_at = models.DateTimeField(auto_now_add=True)
 
