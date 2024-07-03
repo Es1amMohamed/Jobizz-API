@@ -5,7 +5,8 @@ from .models import *
 from .serializers import *
 from rest_framework import viewsets
 from .permissions import *
-from rest_framework.permissions import IsAuthenticated 
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes 
 from rest_framework.decorators import action
 
 
@@ -134,3 +135,14 @@ class JobViewSet(viewsets.ViewSet):
         jobs = Job.objects.all()
         serializer = JobSerializer(jobs, many=True)
         return Response(serializer.data)
+
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_all_jobs(request):
+    
+    jobs = Job.objects.all()
+    serializer = JobSerializer(jobs, many=True)
+    return Response(serializer.data)

@@ -58,7 +58,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["username", "first_name", "last_name", "email"]
 
 
-class ProfileSerializer(serializers.ModelSerializer):
+class EmployeeProfileSerializer(serializers.ModelSerializer):
     """
     this class is used to serialize and deserialize the profile model
 
@@ -66,7 +66,14 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EmployeeProfile
-        exclude = ["slug"]
+        exclude = ["slug",
+                   'username',
+                   "created_at",
+                   "user_type",
+                   'gender',
+                   'password',
+                   'password_confirmation'
+                ] 
 
 
 class CompanyProfileSerializer(serializers.ModelSerializer):
@@ -77,4 +84,11 @@ class CompanyProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CompanyProfile
-        exclude = ["is_active", "slug"]
+        exclude = ["is_active",
+                   "slug",
+                   "created_at",
+                   "user_type",
+                   "password",
+                   "password_confirmation",
+                   'username'
+                   ]

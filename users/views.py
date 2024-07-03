@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 
 
 
-
+    
 
 
 
@@ -227,3 +227,19 @@ def change_password(request):
         return Response(
             {"error": "Invalid old password"}, status=status.HTTP_400_BAD_REQUEST
         )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_employee_profile(request):
+    user = EmployeeProfileSerializer(request.user)
+
+    return Response(user.data)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_company_profile(request):
+    user = CompanyProfileSerializer(request.user)
+
+    return Response(user.data)
+
