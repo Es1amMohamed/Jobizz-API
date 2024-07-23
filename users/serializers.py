@@ -66,14 +66,15 @@ class EmployeeProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EmployeeProfile
-        exclude = ["slug",
-                   'username',
-                   "created_at",
-                   "user_type",
-                   'gender',
-                   'password',
-                   'password_confirmation'
-                ] 
+        exclude = [
+            "slug",
+            "username",
+            "created_at",
+            "user_type",
+            "gender",
+            "password",
+            "password_confirmation",
+        ]
 
 
 class CompanyProfileSerializer(serializers.ModelSerializer):
@@ -84,11 +85,12 @@ class CompanyProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CompanyProfile
-        exclude = ["is_active",
-                   "slug",
-                   "created_at",
-                   "user_type",
-                   "password",
-                   "password_confirmation",
-                   'username'
-                   ]
+        exclude = [
+            "is_active",
+            "slug",
+            "created_at",
+            "user_type",
+            "password",
+            "password_confirmation",
+            "username",
+        ]

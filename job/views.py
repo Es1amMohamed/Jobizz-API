@@ -1,26 +1,26 @@
-from django.shortcuts import render
-from rest_framework import status
-from rest_framework.response import Response
 from .models import *
 from .serializers import *
-from rest_framework import viewsets
 from .permissions import *
+from .filters import JobFilter
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes 
+from rest_framework.decorators import api_view, permission_classes
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 
 
 class JobViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
-    @action(detail=False, methods=['post'], permission_classes=[IsGroupMember])
+    @action(detail=False, methods=["post"], permission_classes=[IsGroupMember])
     def add_job(self, request):
-        
         """
         Add a new job.
 
         This function allows a user to add a new job. The user must have the 'IsGroupMember' permission.
-        
+
         Parameters:
         -----------
         request : Request
@@ -32,7 +32,7 @@ class JobViewSet(viewsets.ViewSet):
             A Response object with the newly added job data if successful,
             or an error response if the data is invalid.
         """
-        
+
         serializer = JobSerializer(data=request.data)
         user = request.user
         if serializer.is_valid():
@@ -41,9 +41,8 @@ class JobViewSet(viewsets.ViewSet):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=["post"])
     def delete_job(self, request, id=None):
-        
         """
         Delete a job.
 
@@ -62,7 +61,7 @@ class JobViewSet(viewsets.ViewSet):
             A Response object with a success status if the job is deleted successfully,
             or an error response if the job is not found or the user is not the owner.
         """
-        
+
         user = request.user
         try:
             job = Job.objects.get(id=id)
@@ -74,10 +73,9 @@ class JobViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
-        
-    @action(detail=True, methods=['post'], permission_classes=[IsEmployee])
+
+    @action(detail=True, methods=["post"], permission_classes=[IsEmployee])
     def apply_job(request, pk):
-        
         """
         Apply for a job.
 
@@ -97,15 +95,20 @@ class JobViewSet(viewsets.ViewSet):
             A Response object with the application data if successful,
             or an error response if the job is not found or the user has already applied.
         """
-        
+
         user = request.user
         try:
-                job = Job.objects.get(id=pk)
+            job = Job.objects.get(id=pk)
         except Job.DoesNotExist:
-                return Response({"error": "Job not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Job not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         if JobApplication.objects.filter(user=user, job=job).exists():
-                return Response({"error": "You have already applied for this job"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "You have already applied for this job"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         application = JobApplication(employee=user, job=job)
         application.save()
@@ -114,8 +117,21 @@ class JobViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class JobFilterViewSet(viewsets.ModelViewSet):
+    """
+    JobFilterViewSet provides CRUD operations for Job model along with filtering capabilities.
+
+    This ViewSet handles creating, retrieving, updating, and deleting job listings.
+    It also allows filtering job listings based on various criteria like job title,
+    publication date, company name, job type, and job level.
+    """
+
+    queryset = Job.objects.all()
+    serializer_class = JobSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = JobFilter
+
     def all_jobs(self, request):
-        
         """
         Get all jobs.
 
@@ -131,18 +147,7 @@ class JobViewSet(viewsets.ViewSet):
         Response
             A Response object with a list of all jobs.
         """
-        
+
         jobs = Job.objects.all()
         serializer = JobSerializer(jobs, many=True)
         return Response(serializer.data)
-
-
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_all_jobs(request):
-    
-    jobs = Job.objects.all()
-    serializer = JobSerializer(jobs, many=True)
-    return Response(serializer.data)

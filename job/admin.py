@@ -14,7 +14,7 @@ class JobApplicationAdmin(admin.ModelAdmin):
     list_display = ("job", "employee")
     list_filter = ("job", "employee")
     search_fields = ("job", "employee")
-    
-    
+
+
 admin.site.register(Job, JobAdmin)
 admin.site.register(JobApplication, JobApplicationAdmin)

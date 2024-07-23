@@ -116,10 +116,8 @@ class EmployeeProfile(models.Model):
         if not self.slug:
             self.slug = slugify(self.username)
         super().save(*args, **kwargs)
-        
-        
+
     def get_application_count(self):
-        
         """
         This method returns the total number of job applications made by this employee.
 
@@ -129,7 +127,7 @@ class EmployeeProfile(models.Model):
         Returns:
             int: The count of job applications made by the employee.
         """
-        
+
         return self.employee_applications.count()
 
 
@@ -183,9 +181,8 @@ class CompanyProfile(models.Model):
         if not self.slug:
             self.slug = slugify(self.username)
         super().save(*args, **kwargs)
-        
+
     def get_job_count(self):
-        
         """
         This method returns the total number of jobs associated with the company.
 
@@ -195,7 +192,7 @@ class CompanyProfile(models.Model):
         Returns:
             int: The count of jobs associated with the company.
         """
-        
+
         return self.jobs.count()
 
 

@@ -8,14 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('job', '0002_jobapplication'),
+        ("job", "0002_jobapplication"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='job',
-            name='company_name',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='jobs', to=settings.AUTH_USER_MODEL),
+            model_name="job",
+            name="company_name",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="jobs",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

@@ -12,33 +12,26 @@ from .serializers import *
 from rest_framework.views import APIView
 
 
-
-    
-
-
-
 class UserSignUpView(APIView):
-    
     """
     This view handles user sign up for both Employee and Company user types.
 
-    Depending on the `user_type` provided in the request data, it delegates the 
+    Depending on the `user_type` provided in the request data, it delegates the
     sign-up process to either `get_employee_data` or `get_company_data`.
 
     Methods
     -------
     post(request, *args, **kwargs)
         Handles the POST request for user sign-up.
-    
+
     get_employee_data(request)
         Processes the sign-up for an Employee user type.
-    
+
     get_company_data(request)
         Processes the sign-up for a Company user type.
     """
 
     def post(self, request, *args, **kwargs):
-        
         """
         Handles the POST request for user sign-up.
 
@@ -52,7 +45,7 @@ class UserSignUpView(APIView):
         Response
             A Response object with the appropriate status and data.
         """
-        
+
         user_type = request.data.get("user_type")
 
         if user_type == "Employee":
@@ -65,7 +58,6 @@ class UserSignUpView(APIView):
             )
 
     def get_employee_data(self, request):
-        
         """
         Processes the sign-up for an Employee user type.
 
@@ -79,7 +71,7 @@ class UserSignUpView(APIView):
         Response
             A Response object with the status and data for the employee sign-up.
         """
-        
+
         employee_serializer = EmployeeSignUpSerializer(data=request.data)
         employee_email = request.data.get("email")
         if not User.objects.filter(email=employee_email).exists():
@@ -98,7 +90,6 @@ class UserSignUpView(APIView):
         )
 
     def get_company_data(self, request):
-        
         """
         Processes the sign-up for a Company user type.
 
@@ -112,7 +103,7 @@ class UserSignUpView(APIView):
         Response
             A Response object with the status and data for the company sign-up.
         """
-        
+
         company_serializer = CompanySignUpSerializer(data=request.data)
         company_email = request.data.get("email")
         if not User.objects.filter(email=company_email).exists():
@@ -145,11 +136,10 @@ def get_user(request):
 
 @api_view(["POST"])
 def login(request):
-    
     """
     Handle user login.
 
-    This function processes a POST request to authenticate a user based on the 
+    This function processes a POST request to authenticate a user based on the
     provided username and password. If the authentication is successful, the user
     is logged in and a success message is returned. Otherwise, an error message
     indicating invalid credentials is returned.
@@ -165,15 +155,15 @@ def login(request):
         A Response object with a success message if login is successful,
         or an error message if authentication fails.
     """
-    
+
     data = request.data
     username = data.get("username")
     password = data.get("password")
 
     if not username or not password:
         return Response(
-            {"error": "Username and password are required"}, 
-            status=status.HTTP_400_BAD_REQUEST
+            {"error": "Username and password are required"},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     user = authenticate(username=username, password=password)
@@ -182,9 +172,10 @@ def login(request):
         return Response({"message": "Login successful"}, status=status.HTTP_200_OK)
     else:
         return Response(
-            {"error": "Invalid username or password"}, 
-            status=status.HTTP_400_BAD_REQUEST
+            {"error": "Invalid username or password"},
+            status=status.HTTP_400_BAD_REQUEST,
         )
+
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -195,7 +186,6 @@ def logout(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def change_password(request):
-    
     """
     Handle changing user password.
 
@@ -214,7 +204,7 @@ def change_password(request):
         A Response object with a success message if password change is successful,
         or an error message if the old password is invalid.
     """
-    
+
     user = User.objects.get(id=request.user.id)
 
     if user.check_password(request.data["password"]):
@@ -236,10 +226,10 @@ def get_employee_profile(request):
 
     return Response(user.data)
 
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_company_profile(request):
     user = CompanyProfileSerializer(request.user)
 
     return Response(user.data)
-
