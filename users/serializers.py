@@ -88,7 +88,7 @@ class CompanyProfileSerializer(serializers.ModelSerializer):
         exclude = [
             "is_active",
             "slug",
-            "created_at",
+            "crated_at",
             "user_type",
             "password",
             "password_confirmation",

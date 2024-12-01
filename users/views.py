@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -78,7 +78,7 @@ class UserSignUpView(APIView):
             if employee_serializer.is_valid():
                 employee_serializer.save()
                 user = User.objects.get(email=employee_email)
-                login(request, user)
+                auth_login(request, user)
                 return Response(
                     employee_serializer.data, status=status.HTTP_201_CREATED
                 )
@@ -109,12 +109,9 @@ class UserSignUpView(APIView):
         if not User.objects.filter(email=company_email).exists():
             if company_serializer.is_valid():
                 company_serializer.save()
-                user = User.objects.get(email=company_email)
-                login(request, user)
                 return Response(
                     {
                         "message": "Profile created successfully, We will approve you soon",
-                        "company": company_serializer.data,
                     },
                     status=status.HTTP_201_CREATED,
                 )
@@ -169,18 +166,19 @@ def login(request):
     user = authenticate(username=username, password=password)
     if user is not None:
         auth_login(request, user)
-        return Response({"message": "Login successful"}, status=status.HTTP_200_OK)
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {
+                "access_token": str(refresh.access_token),
+                "refresh_token": str(refresh),
+            },
+            status=status.HTTP_200_OK,
+        )
     else:
         return Response(
             {"error": "Invalid username or password"},
             status=status.HTTP_400_BAD_REQUEST,
         )
-
-
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def logout(request):
-    return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
@@ -220,7 +218,6 @@ def change_password(request):
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
 def get_employee_profile(request):
     user = EmployeeProfileSerializer(request.user)
 
@@ -228,8 +225,11 @@ def get_employee_profile(request):
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def get_company_profile(request):
-    user = CompanyProfileSerializer(request.user)
+def get_company_profile(request, pk):
+    company = CompanyProfile.objects.get(id=pk)
+    serializer = CompanyProfileSerializer(company)
 
-    return Response(user.data)
+    return Response(
+        serializer.data,
+        status=status.HTTP_200_OK,
+    )

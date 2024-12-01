@@ -70,7 +70,10 @@ class JobViewSet(viewsets.ViewSet):
 
         if user == job.company_name:
             job.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                {"message": "Job deleted successfully"},
+                status=status.HTTP_204_NO_CONTENT,
+            )
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
@@ -117,13 +120,12 @@ class JobViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class JobFilterViewSet(viewsets.ModelViewSet):
+class JobFilterViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    JobFilterViewSet provides CRUD operations for Job model along with filtering capabilities.
+    JobFilterViewSet provides read-only access to Job model with filtering capabilities.
 
-    This ViewSet handles creating, retrieving, updating, and deleting job listings.
-    It also allows filtering job listings based on various criteria like job title,
-    publication date, company name, job type, and job level.
+    This ViewSet allows retrieving job listings and filtering them based on various criteria like
+    job title, publication date, company name, job type, and job level.
     """
 
     queryset = Job.objects.all()
